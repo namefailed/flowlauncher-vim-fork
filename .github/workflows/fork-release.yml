@@ -74,24 +74,17 @@ jobs:
         run: .\Scripts\post_build.ps1
 
       - name: Publish GitHub Release
-        shell: powershell
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $exe = Get-ChildItem Output\Packages\Flow-Launcher-*.exe | Select-Object -First 1
-          $zip = "Output\Packages\Flow-Launcher-Portable.zip"
-          if (-not $exe) { throw "Installer not found in Output\Packages" }
-          $notes = @"
-          Automated build of the **Vim Edition** fork (interim build while upstream review is pending).
-
-          - Enable in **Settings → General → "Enable Advanced Vim Mode"**.
-          - The Vim feature is proposed to the official project in [Flow-Launcher/Flow.Launcher#4541](https://github.com/Flow-Launcher/Flow.Launcher/pull/4541).
-          - Unsigned build — Windows SmartScreen may warn. Choose *More info → Run anyway* if you trust it.
-          "@
-          gh release create "${{ steps.ver.outputs.tag }}" `
-            "$($exe.FullName)" `
-            "$zip" `
-            --title "Vim Edition ${{ steps.ver.outputs.tag }}" `
-            --notes "$notes" `
-            --target "$env:GITHUB_SHA" `
+          set -e
+          exe=$(ls Output/Packages/Flow-Launcher-*.exe | head -n1)
+          if [ -z "$exe" ]; then echo "Installer not found in Output/Packages"; exit 1; fi
+          gh release create "${{ steps.ver.outputs.tag }}" \
+            "$exe" \
+            "Output/Packages/Flow-Launcher-Portable.zip" \
+            --title "Vim Edition ${{ steps.ver.outputs.tag }}" \
+            --notes "Automated interim build of the Vim Edition fork, published while the upstream review is pending. Enable it in Settings > General > 'Enable Advanced Vim Mode'. The Vim feature is proposed upstream in Flow-Launcher/Flow.Launcher#4541. This is an unsigned build, so Windows SmartScreen may warn -- choose More info > Run anyway if you trust it." \
+            --target "$GITHUB_SHA" \
             --prerelease
