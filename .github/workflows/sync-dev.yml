@@ -1,0 +1,59 @@
+# Keeps the fork's `dev` branch in sync with the clean PR branch `vim-mode`.
+#
+# On every push to vim-mode, this merges vim-mode into dev and pushes it.
+# dev's fork-only files (the branded README, fork-release.yml, this workflow)
+# survive the merge because vim-mode never touches them. After a successful
+# sync it kicks off a release build so the download stays current.
+#
+# This workflow exists only on dev (the fork branch); it is not part of the
+# upstream PR.
+
+name: Sync dev from vim-mode
+
+on:
+  push:
+    branches:
+      - vim-mode
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: dev
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Merge vim-mode into dev
+        id: merge
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin vim-mode
+          BEFORE=$(git rev-parse HEAD)
+          if git merge --no-edit origin/vim-mode; then
+            AFTER=$(git rev-parse HEAD)
+            if [ "$BEFORE" = "$AFTER" ]; then
+              echo "dev is already up to date with vim-mode."
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+            else
+              git push origin dev
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "::error::Merge conflict between vim-mode and dev. Resolve it manually (vim-mode should never modify dev's fork-only files)."
+            git merge --abort
+            exit 1
+          fi
+
+      - name: Trigger release build
+        if: steps.merge.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run "Fork Release" --repo "${{ github.repository }}" --ref dev

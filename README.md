@@ -64,6 +64,8 @@ Run the unit tests with `dotnet test`.
 | **`dev`** (this branch) | The fork's default branch: fork branding + the [release workflow](.github/workflows/fork-release.yml). What you download from Releases. |
 | **`vim-mode`** | The clean branch behind upstream **[PR #4541](https://github.com/Flow-Launcher/Flow.Launcher/pull/4541)** — kept identical to upstream `dev` plus the feature, with no fork-specific changes. |
 
+These two branches stay in sync automatically: a push to `vim-mode` is merged into `dev` by [`sync-dev.yml`](.github/workflows/sync-dev.yml) (the fork-only files above are preserved), and any update to `dev` builds and publishes a fresh [release](https://github.com/namefailed/flowlauncher-vim-fork/releases/latest) via [`fork-release.yml`](.github/workflows/fork-release.yml). So work happens on `vim-mode`, and a new downloadable build follows on its own.
+
 All credit for Flow Launcher itself goes to the [Flow Launcher team and contributors](https://github.com/Flow-Launcher/Flow.Launcher/graphs/contributors). This fork only adds the Vim mode layer. For everything else — plugins, features, docs — see the official project:
 
 [Website](https://flowlauncher.com) · [Documentation](https://flowlauncher.com/docs/) · [Official repo](https://github.com/Flow-Launcher/Flow.Launcher)
