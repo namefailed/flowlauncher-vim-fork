@@ -1,9 +1,15 @@
 # Keeps the fork's `dev` branch in sync with the clean PR branch `vim-mode`.
 #
-# On every push to vim-mode, this merges vim-mode into dev and pushes it.
+# Runs on a schedule (and on demand): it merges vim-mode into dev and pushes it.
 # dev's fork-only files (the branded README, fork-release.yml, this workflow)
 # survive the merge because vim-mode never touches them. After a successful
 # sync it kicks off a release build so the download stays current.
+#
+# Note: this can't trigger directly on a push to vim-mode, because GitHub runs
+# push-triggered workflows from the file present on the pushed branch, and this
+# file deliberately lives only on dev (to keep the PR branch clean). Polling is
+# the clean way to react to vim-mode pushes without adding a fork-only file to
+# the PR. Use "Run workflow" for an immediate sync.
 #
 # This workflow exists only on dev (the fork branch); it is not part of the
 # upstream PR.
@@ -11,9 +17,8 @@
 name: Sync dev from vim-mode
 
 on:
-  push:
-    branches:
-      - vim-mode
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 minutes
   workflow_dispatch:
 
 permissions:
