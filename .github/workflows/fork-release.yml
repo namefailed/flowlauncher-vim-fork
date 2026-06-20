@@ -87,4 +87,4 @@ jobs:
             --title "Vim Edition ${{ steps.ver.outputs.tag }}" \
             --notes "Automated interim build of the Vim Edition fork, published while the upstream review is pending. Enable it in Settings > General > 'Enable Advanced Vim Mode'. The Vim feature is proposed upstream in Flow-Launcher/Flow.Launcher#4541. This is an unsigned build, so Windows SmartScreen may warn -- choose More info > Run anyway if you trust it." \
             --target "$GITHUB_SHA" \
-            --prerelease
+            --latest
